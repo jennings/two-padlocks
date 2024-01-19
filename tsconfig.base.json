@@ -1,0 +1,13 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"compilerOptions": {
+		"strict": true,
+		"target": "ES2018",
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"stripInternal": true,
+		"declaration": true,
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext"
+	}
+}

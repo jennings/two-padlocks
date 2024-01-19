@@ -1,0 +1,27 @@
+{
+	"name": "two-padlocks-cli",
+	"version": "1.0.0",
+	"description": "",
+	"main": "dist/index.js",
+	"type": "module",
+	"bin": {
+		"2padlocks": "./dist/index.js"
+	},
+	"scripts": {
+		"build": "tsc --build",
+		"fmt": "prettier src --write",
+		"start": "node dist/index.js"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "Apache-2.0",
+	"dependencies": {
+		"commander": "^11.1.0",
+		"two-padlocks-core": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/node": "^20.11.5",
+		"prettier": "^3.2.4",
+		"typescript": "^5.3.3"
+	}
+}
