@@ -35,8 +35,6 @@
   });
 </script>
 
-<h1>Two Padlocks</h1>
-
 {#if key.state === "ready"}
   <div class="container">
     <p>

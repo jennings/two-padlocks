@@ -24,8 +24,6 @@
   onMount(go);
 </script>
 
-<h1>Demo</h1>
-
 {#if serializedKey}
   <div>
     <div>
