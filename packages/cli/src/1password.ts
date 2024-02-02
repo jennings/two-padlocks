@@ -1,10 +1,12 @@
 import { spawnSync } from "child_process";
-import type { StringKeyPair } from "two-padlocks-core/crypto";
-import { KeyPair } from "two-padlocks-core/crypto";
+import type { Context, StringKeyPair } from "./encryption.js";
+import { KeyPair } from "./encryption.js";
 
 export class OnePassword {
+	constructor(private readonly context: Context) {}
+
 	async createSecureNoteRequest(title: string) {
-		const keypair = await KeyPair.generate();
+		const keypair = await KeyPair.generate(this.context);
 		const request = new SecureNoteRequest("2Padlocks", title, keypair.toStringKeyPair());
 		const r = spawnSync(
 			"op",

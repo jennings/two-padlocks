@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { SealedBox, PublicKey } from "two-padlocks-core/crypto";
+  import type { Context } from "$lib/encryption";
+  import { PublicKey, SealedBox, createContext } from "$lib/encryption";
 
   type Loadable<T> =
     | { state: "loading" }
@@ -9,15 +10,16 @@
 
   let plaintext = "";
   let ciphertext: string | null = "";
-  let key: Loadable<PublicKey> = { state: "loading" };
+  type ReadyData = { context: Context; publicKey: PublicKey };
+  let data: Loadable<ReadyData> = { state: "loading" };
   let recipient: string | null;
 
-  async function seal(key: PublicKey) {
-    const box = await SealedBox.seal(plaintext, key);
+  async function seal(context: Context, key: PublicKey) {
+    const box = await SealedBox.seal(context, plaintext, key);
     ciphertext = box.toString();
   }
 
-  onMount(() => {
+  onMount(async () => {
     const { hash } = window.location;
     const params = new URLSearchParams(hash);
     const publicKey = params.get("publicKey");
@@ -28,21 +30,35 @@
       const missingNames = [publicKey && "publicKey", keyType && "keyType"]
         .filter(Boolean)
         .join(",");
-      key = { state: "error", error: new Error(`Missing ${missingNames} from hash`) };
+      data = { state: "error", error: new Error(`Missing ${missingNames} from hash`) };
     } else {
-      key = { state: "ready", value: PublicKey.fromStringPublicKey({ keyType, publicKey }) };
+      try {
+        const context = await createContext();
+        const pk = PublicKey.fromStringPublicKey(context, { keyType, publicKey });
+        data = {
+          state: "ready",
+          value: {
+            context,
+            publicKey: pk,
+          },
+        };
+      } catch (error) {
+        data = { state: "error", error };
+      }
     }
   });
 </script>
 
-{#if key.state === "ready"}
+{#if data.state === "ready"}
   <div class="container">
     <p>
       Encrypt a secret{#if recipient}
         to {recipient}{/if}.
     </p>
     <textarea value={plaintext} on:input={(e) => (plaintext = e.currentTarget.value)} />
-    <button on:click={seal.bind(undefined, key.value)}>Encrypt</button>
+    <button on:click={seal.bind(undefined, data.value.context, data.value.publicKey)}>
+      Encrypt
+    </button>
 
     {#if ciphertext != null}
       <textarea readonly value={ciphertext} />
@@ -53,9 +69,9 @@
     Two Padlocks is a tool to request an secret. You should receive a link to this page which will
     let you encrypt a secret.
   </p>
-  {#if key.state === "error"}
+  {#if data.state === "error"}
     <p>
-      Load error: {key.error}
+      Load error: {data.error}
     </p>
   {/if}
 {/if}
