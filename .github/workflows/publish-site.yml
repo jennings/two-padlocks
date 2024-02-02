@@ -16,10 +16,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-jobs:
 
   build:
     runs-on: ubuntu-latest
@@ -32,16 +28,19 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2.4.0
+        with:
+          version: 8
 
       - name: Build
+        working-directory: packages/web
         run: |
           pnpm install --frozen-lockfile
-          pnpm run build
+          pnpm build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: build/
+          path: packages/web/build/
 
   deploy:
     environment:
@@ -52,4 +51,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v2
