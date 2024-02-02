@@ -9,6 +9,7 @@
 	},
 	"scripts": {
 		"build": "tsc --build",
+		"test": "jest",
 		"fmt": "prettier src --write",
 		"start": "node dist/index.js"
 	},
@@ -17,11 +18,15 @@
 	"license": "Apache-2.0",
 	"dependencies": {
 		"commander": "^11.1.0",
-		"two-padlocks-core": "workspace:*"
+		"libsodium-wrappers": "^0.7.13"
 	},
 	"devDependencies": {
+		"@types/jest": "^29.5.12",
+		"@types/libsodium-wrappers": "^0.7.13",
 		"@types/node": "^20.11.5",
+		"jest": "^29.7.0",
 		"prettier": "^3.2.4",
+		"ts-jest": "^29.1.2",
 		"typescript": "^5.3.3"
 	}
 }

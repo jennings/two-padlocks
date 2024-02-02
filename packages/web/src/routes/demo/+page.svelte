@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { StringKeyPair, StringPublicKey } from "two-padlocks-core/crypto";
-  import { SealedBox, PublicKey, KeyPair } from "two-padlocks-core/crypto";
+  import type { StringKeyPair, StringPublicKey } from "$lib/encryption";
+  import { SealedBox, KeyPair, createContext } from "$lib/encryption";
 
   let serializedKey: StringKeyPair | undefined;
   let serializedPublicKey: StringPublicKey | undefined;
@@ -10,15 +10,16 @@
   let decryptedPlaintext: string | undefined;
 
   async function go() {
-    const key = await KeyPair.generate();
+    const context = await createContext();
+    const key = KeyPair.generate(context);
     serializedKey = key.toStringKeyPair();
     serializedPublicKey = key.toStringPublicKey();
     plaintext = "Hello, world!";
-    const box = await SealedBox.seal(plaintext, key);
+    const box = SealedBox.seal(context, plaintext, key);
     ciphertext = box.toBase64();
 
-    const reconstructedBox = SealedBox.fromBase64(ciphertext);
-    decryptedPlaintext = await reconstructedBox.open(key, "text");
+    const reconstructedBox = SealedBox.fromBase64(context, ciphertext);
+    decryptedPlaintext = reconstructedBox.open(context, key, "text");
   }
 
   onMount(go);
