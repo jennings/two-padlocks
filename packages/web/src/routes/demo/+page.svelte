@@ -1,110 +1,97 @@
 <script lang="ts">
+  import type { Context } from "$lib/encryption";
+  import { KeyPair, SealedBox, createContext } from "$lib/encryption";
+  import clipboardCopy from "clipboard-copy";
   import { onMount } from "svelte";
-  import type { StringKeyPair, StringPublicKey } from "$lib/encryption";
-  import { SealedBox, KeyPair, createContext } from "$lib/encryption";
 
-  let serializedKey: StringKeyPair | undefined;
-  let serializedPublicKey: StringPublicKey | undefined;
-  let plaintext: string | undefined;
-  let ciphertext: string | undefined;
-  let decryptedPlaintext: string | undefined;
+  let context: Context | undefined;
+  let key: KeyPair | undefined;
+  $: serializedKey = key?.toStringKeyPair();
+  $: serializedPublicKey = key?.toStringPublicKey();
+  $: requestUrl = key ? buildRequestUrl(key) : "";
 
-  async function go() {
-    const context = await createContext();
-    const key = KeyPair.generate(context);
-    serializedKey = key.toStringKeyPair();
-    serializedPublicKey = key.toStringPublicKey();
-    plaintext = "Hello, world!";
-    const box = SealedBox.seal(context, plaintext, key);
-    ciphertext = box.toBase64();
+  let ciphertext = "";
+  $: plaintext = context && key && ciphertext ? decrypt(context, key, ciphertext) : "";
 
-    const reconstructedBox = SealedBox.fromBase64(context, ciphertext);
-    decryptedPlaintext = reconstructedBox.open(context, key, "text");
+  async function generateRequest() {
+    context = await createContext();
+    key = KeyPair.generate(context);
+    ciphertext = "";
   }
 
-  onMount(go);
+  function buildRequestUrl(key: KeyPair) {
+    const p = new URLSearchParams(key.toStringPublicKey());
+    return `${window.origin}/#${p}`;
+  }
+
+  function decrypt(context: Context, key: KeyPair, ciphertext: string) {
+    try {
+      const reconstructedBox = SealedBox.fromBase64(context, ciphertext);
+      return reconstructedBox.open(context, key, "text");
+    } catch (err) {
+      return "Unable to decrypt";
+    }
+  }
+
+  onMount(generateRequest);
 </script>
 
-{#if serializedKey}
-  <div>
-    <div>
-      <label
-        >Key type
-        <input readonly value={serializedKey.keyType} />
-      </label>
-    </div>
-    <div>
-      <label
-        >Public key
-        <input readonly value={serializedKey.publicKey} />
-      </label>
-    </div>
-    <div>
-      <label
-        >Private key
-        <input readonly value={serializedKey.privateKey} />
-      </label>
-    </div>
-  </div>
-{/if}
-{#if serializedPublicKey}
-  <div>
-    <div>
-      <label
-        >Key type
-        <input readonly value={serializedPublicKey.keyType} />
-      </label>
-    </div>
-    <div>
-      <label
-        >Public key
-        <input readonly value={serializedPublicKey.publicKey} />
-      </label>
-    </div>
-  </div>
-{/if}
-{#if plaintext}
-  <div>
-    <label>Plaintext <textarea readonly value={plaintext} /></label>
-  </div>
-{/if}
-{#if ciphertext}
-  <div>
-    <label>Ciphertext <textarea readonly value={ciphertext} /></label>
-  </div>
-{/if}
-{#if decryptedPlaintext}
-  <div>
-    <label>Decrypted plaintext <textarea readonly value={decryptedPlaintext} /></label>
-  </div>
-{/if}
-
-<button on:click={go}>Redo</button>
-
 <div class="container">
-  <div>
-    <h2>Recipient</h2>
-    <div>The recipient generates a key pair.</div>
-    <div></div>
-  </div>
-
-  <div>
-    <h2>Sender</h2>
-    <div>f</div>
-    <div>Visits the URL</div>
+  <div class="row">
+    <div class="col">
+      <h2>Create request</h2>
+      {#if serializedKey}
+        <div class="container">
+          <div class="row">
+            <div class="col">
+              <label for="keyType">Key type </label>
+            </div>
+            <div class="col">
+              <input readonly name="keyType" value={serializedKey.keyType} />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <label for="keyType">Public key</label>
+            </div>
+            <div class="col">
+              <input readonly name="publicKey" value={serializedKey.publicKey} />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <label for="keyType">Private key</label>
+            </div>
+            <div class="col">
+              <input readonly name="privateKey" value={serializedKey.privateKey} />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <label for="requestUrl">Request URL</label>
+            </div>
+            <div class="col">
+              <input readonly name="requestUrl" value={requestUrl} /> <br />
+              <button on:click={clipboardCopy.bind(undefined, requestUrl)}>Copy</button> <br />
+              <a target="_blank" href={requestUrl}>Open in new window</a>
+            </div>
+          </div>
+        </div>
+      {/if}
+    </div>
+    <div class="col">
+      <h2>Decrypt response</h2>
+      <label
+        >Ciphertext <br />
+        <textarea rows="4" cols="50" value={ciphertext} on:input={(e) => (ciphertext = e.currentTarget.value)} />
+      </label>
+      <br />
+      {#if plaintext}
+        <label
+          >Plaintext <br />
+          <textarea rows="4" cols="50" readonly value={plaintext} />
+        </label>
+      {/if}
+    </div>
   </div>
 </div>
-
-<style>
-  .container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-  }
-  .container > * {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: subgrid;
-    border: solid 1px grey;
-  }
-</style>

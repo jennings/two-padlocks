@@ -39,6 +39,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"clipboard-copy": "^4.0.1",
 		"libsodium-wrappers": "^0.7.13"
 	}
 }

@@ -39,6 +39,9 @@ importers:
 
   packages/web:
     dependencies:
+      clipboard-copy:
+        specifier: ^4.0.1
+        version: 4.0.1
       libsodium-wrappers:
         specifier: ^0.7.13
         version: 0.7.13
@@ -1818,6 +1821,10 @@ packages:
   /cjs-module-lexer@1.2.3:
     resolution: {integrity: sha512-0TNiGstbQmCFwt4akjjBg5pLRTSyj/PkWQ1ZoO2zntmg9yLqSRxwEa4iCfQLGjqhiqBfOJa7W/E8wfGrTDmlZQ==}
     dev: true
+
+  /clipboard-copy@4.0.1:
+    resolution: {integrity: sha512-wOlqdqziE/NNTUJsfSgXmBMIrYmfd5V0HCGsR8uAKHcg+h9NENWINcfRjtWGU77wDHC8B8ijV4hMTGYbrKovng==}
+    dev: false
 
   /cliui@8.0.1:
     resolution: {integrity: sha512-BSeNnyus75C4//NQ9gQt1/csTXyo/8Sb+afLAkzAptFuMsod9HFokGNudZpi/oQV73hnVK+sR+5PVRMd+Dr7YQ==}

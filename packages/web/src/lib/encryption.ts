@@ -126,6 +126,10 @@ export class SealedBox {
 		return new SealedBox(context, context[sodium].from_base64(ciphertext));
 	}
 
+	toString() {
+		return this.toBase64();
+	}
+
 	toBase64() {
 		return this.context[sodium].to_base64(this.ciphertext);
 	}

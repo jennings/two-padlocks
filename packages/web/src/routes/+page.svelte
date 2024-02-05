@@ -14,20 +14,20 @@
   let data: Loadable<ReadyData> = { state: "loading" };
   let recipient: string | null;
 
-  async function seal(context: Context, key: PublicKey) {
-    const box = await SealedBox.seal(context, plaintext, key);
-    ciphertext = box.toString();
+  function seal(context: Context, key: PublicKey) {
+    const box = SealedBox.seal(context, plaintext, key);
+    ciphertext = box.toBase64();
   }
 
   onMount(async () => {
     const { hash } = window.location;
-    const params = new URLSearchParams(hash);
+    const params = new URLSearchParams(hash.slice(1));
     const publicKey = params.get("publicKey");
     const keyType = params.get("keyType");
     recipient = params.get("recipient");
 
     if (publicKey == null || keyType == null) {
-      const missingNames = [publicKey && "publicKey", keyType && "keyType"]
+      const missingNames = [!publicKey && "publicKey", !keyType && "keyType"]
         .filter(Boolean)
         .join(",");
       data = { state: "error", error: new Error(`Missing ${missingNames} from hash`) };
@@ -55,13 +55,18 @@
       Encrypt a secret{#if recipient}
         to {recipient}{/if}.
     </p>
-    <textarea value={plaintext} on:input={(e) => (plaintext = e.currentTarget.value)} />
+    <textarea
+      rows="4"
+      cols="50"
+      value={plaintext}
+      on:input={(e) => (plaintext = e.currentTarget.value)}
+    />
     <button on:click={seal.bind(undefined, data.value.context, data.value.publicKey)}>
       Encrypt
     </button>
 
     {#if ciphertext != null}
-      <textarea readonly value={ciphertext} />
+      <textarea readonly rows="4" cols="50" value={ciphertext} />
     {/if}
   </div>
 {:else}
